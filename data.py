@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 def generate_data(sequence_length = 500, num_features=8):
     # (batch_size, sequence_length, num_features), output
     X = np.random.uniform(low = 0, high=1, size = (num_features, sequence_length)).astype(np.float32)
-    y = 1
+    y = np.array([1, 0]).astype(np.float32)
 
     return X, y
 # %%
