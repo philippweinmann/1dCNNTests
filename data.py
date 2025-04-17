@@ -2,52 +2,48 @@
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from sklearn.datasets import make_classification
+
+
 # %%
-def generate_uniform_data(sequence_length = 500, num_features=8):
-    # (batch_size, sequence_length, num_features), output
-    X = np.random.uniform(low = 0, high=1, size = (num_features, sequence_length)).astype(np.float32)
-    y = np.array([1, 0]).astype(np.float32)
+def generate_data(n_samples, n_features, n_slices):
+    X = np.random.uniform(
+        low=0, high=1, size=(n_samples, n_features, n_slices)
+    )  # 2D data points
+    X[0 : n_samples // 2, :, 0:200] = 0
+    X[n_samples // 2 :, :, 0:200] = 1
+
+    X = X.astype(np.float32)
+
+    y = np.ones(shape=(n_samples))
+    y[0 : n_samples // 2] = 1
+    y[n_samples // 2 :] = 0
+
+    y = y.astype(np.float32)
 
     return X, y
 
-def generate_proper_dataset(n_samples=105, sequence_length = 500, num_features=8):
-    # where we can test if the model actually learns something.
-    n_features = sequence_length * num_features
-    n_informative = n_features // 10
 
-    X, y = make_classification(n_samples=n_samples, n_features=n_features, n_informative=n_informative, n_redundant=n_informative, n_repeated=n_informative, n_classes=2, random_state=42)
-    X = X.reshape((n_samples, num_features, sequence_length)).astype(np.float32)
-    # print(y)
-    '''
-    new_y = []
-    for value in y:
-        if value == 0:
-            new_y.append(np.array([1, 0]).astype(np.float32))
-        elif value == 1:
-            new_y.append(np.array([0, 1]).astype(np.float32))
-
-    new_y = np.array(new_y).astype(np.float32)
-    # print(new_y)
-    '''
-    return X, y
 # %%
 class CustomDataset(Dataset):
-    def __init__(self, length, sequence_length = 500, num_features=8):
+    def __init__(self, length, sequence_length=500, num_features=8):
         self.length = length
-        X, y = generate_proper_dataset(n_samples=self.length)
+        X, y = generate_data(
+            n_samples=self.length, n_features=num_features, n_slices=sequence_length
+        )
         self.X = X
         self.y = y
 
     def __len__(self):
         return self.length
-    
+
     def __getitem__(self, index):
         # X, y = generate_uniform_data()
-        current_X = self.X[index,:]
+        current_X = self.X[index]
         current_y = self.y[index]
         return current_X, current_y
-    
-def get_dataloader(length):
-    dataloader = DataLoader(CustomDataset(length), batch_size=4, shuffle=True)
+
+
+def get_dataloader(length, batch_size):
+    dataloader = DataLoader(CustomDataset(length), batch_size=batch_size, shuffle=True)
 
     return dataloader

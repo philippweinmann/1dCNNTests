@@ -2,7 +2,7 @@
 import torch.nn as nn
 
 
-'''
+"""
 Model architecture thoughts:
 
 1. The (input) data
@@ -85,38 +85,56 @@ a7*. pooling layer (reduce dimensionality)
 We will only use a single block, the data aint that complex.
 a8*. One last convolutional layer
 a9*. One or two FC layers.
-'''
+"""
+
+
 class BASIC_CNN1D(nn.Module):
-    def __init__(self, input_channels=8, num_classes=1):
-        super().__init__()
-        # Convolutional layers
-        self.conv1 = nn.Conv1d(input_channels, 32, kernel_size=3, padding='valid')
-        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, padding='valid')
-        
-        # Activation and pooling
-        self.relu = nn.ReLU()
-        self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
-        
-        # Adaptive pooling to handle variable input lengths
-        self.adaptive_pool = nn.AdaptiveAvgPool1d(1)
-        
-        # Fully connected layer
-        self.fc = nn.Linear(64, num_classes)
+    def __init__(self, num_classes, input_channels=8):
+        super(BASIC_CNN1D, self).__init__()
+        # Input shape: (batch_size, 8, 400)
+        self.starting_filters_amt = 16
+        self.conv1 = nn.Conv1d(
+            input_channels, self.starting_filters_amt, kernel_size=3, padding=1
+        )  # (16, 400)
+        self.relu1 = nn.ReLU()
+        self.maxpool = nn.MaxPool1d(2)  # (16, 200)
+        self.conv2 = nn.Conv1d(
+            self.starting_filters_amt,
+            self.starting_filters_amt * 2,
+            kernel_size=3,
+            padding=1,
+        )
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool1d(2)
+        self.conv3 = nn.Conv1d(
+            self.starting_filters_amt * 2,
+            self.starting_filters_amt * 2 * 2,
+            kernel_size=3,
+            padding=1,
+        )  # (64, 100)
+        self.relu3 = nn.ReLU()
+        self.maxpool3 = nn.MaxPool1d(2)  # (64, 50)
+        self.adaptiveavgpool = nn.AdaptiveAvgPool1d(1)  # (64, 1)
+
+        # now the linear layers
+        self.flatten = nn.Flatten()
+        self.linear1 = nn.Linear(self.starting_filters_amt * 2 * 2, num_classes)
 
     def forward(self, x):
-        # Input shape: (batch_size, input_channels, sequence_length)
         x = self.conv1(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        
+        x = self.relu1(x)
+        x = self.maxpool(x)
         x = self.conv2(x)
-        x = self.relu(x)
-        x = self.pool(x)
-        
-        # Adaptive pooling to get fixed-size output
-        x = self.adaptive_pool(x)  # shape: (batch_size, 64, 1)
-        x = x.squeeze(-1)          # shape: (batch_size, 64)
-        x = self.fc(x)             # shape: (batch_size, num_classes)
+        x = self.relu2(x)
+        x = self.maxpool2(x)
+        x = self.conv3(x)
+        x = self.relu3(x)
+        x = self.maxpool3(x)
+        x = self.adaptiveavgpool(x)
+
+        x = self.flatten(x)
+        x = self.linear1(x)
         return x
+
 
 # %%
