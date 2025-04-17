@@ -17,7 +17,18 @@ def generate_proper_dataset(n_samples=105, sequence_length = 500, num_features=8
 
     X, y = make_classification(n_samples=n_samples, n_features=n_features, n_informative=n_informative, n_redundant=n_informative, n_repeated=n_informative, n_classes=2, random_state=42)
     X = X.reshape((n_samples, num_features, sequence_length)).astype(np.float32)
+    # print(y)
+    '''
+    new_y = []
+    for value in y:
+        if value == 0:
+            new_y.append(np.array([1, 0]).astype(np.float32))
+        elif value == 1:
+            new_y.append(np.array([0, 1]).astype(np.float32))
 
+    new_y = np.array(new_y).astype(np.float32)
+    # print(new_y)
+    '''
     return X, y
 # %%
 class CustomDataset(Dataset):

@@ -34,7 +34,7 @@ a7. Dropout Layer
 a8. activation function layer (RELU)
 a9. pooling layer (reduce dimensionality)
 
-We will only use a single block, the data aint that complex.
+We will only use a single block, the data isn't that complex.
 a10. One last convolutional layer
 a11. One or two FC layers.
 
@@ -87,7 +87,7 @@ a8*. One last convolutional layer
 a9*. One or two FC layers.
 '''
 class BASIC_CNN1D(nn.Module):
-    def __init__(self, input_channels=8, num_classes=2):
+    def __init__(self, input_channels=8, num_classes=1):
         super().__init__()
         # Convolutional layers
         self.conv1 = nn.Conv1d(input_channels, 32, kernel_size=3, padding='valid')

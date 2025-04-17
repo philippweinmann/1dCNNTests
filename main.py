@@ -17,15 +17,10 @@ def test_loop(dataloader, model, loss_fn):
 
     with torch.no_grad():
         for X, y in dataloader:
-            # print(f"y: {y}")
+            y = y.float()
             pred = model(X)
             print(f"prediction: {pred}")
-            # y = F.one_hot(y, num_classes=2)
-            # y = y.to(torch.float32)
-            # print(f"y onehot: {y}")
-            test_loss += loss_fn(pred, y).item()
-            # print(f"pred: {pred}")
-            # print(f"pred argmax: {pred.argmax(1)}")
+            test_loss += loss_fn(pred.squeeze(), y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
 
     test_loss /= num_batches
@@ -39,22 +34,19 @@ def training_loop(dataloader, model, loss_fn, optimizer):
     model.train()
 
     for i, (X, y) in enumerate(dataloader):
-        # y = F.one_hot(y, num_classes=2)
-        # y = y.to(torch.float32)
-
+        y = y.float()
         optimizer.zero_grad()
         pred = model(X)
-        loss = loss_fn(pred, y)
+        loss = loss_fn(pred.squeeze(), y)
         loss.backward()
         optimizer.step()
 
-        # print(f"batch number: {i}, loss: {loss.item()}")
-
 model = BASIC_CNN1D()
 epochs = 100
-loss_fn = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+loss_fn = torch.nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
+# %%
 for epoch in range(epochs):
     print(f"epoch: {epoch + 1} / {epochs}")
 
